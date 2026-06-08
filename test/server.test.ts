@@ -43,3 +43,24 @@ test('bearing wraps to [0, 360)', () => {
   const b = bearing(0, 0, 0, -1);
   assert.ok(Math.abs(b - 270) < 0.001);
 });
+
+test('unit conversions: m and nm', () => {
+  const km = haversine(0, 0, 0, 1, 'km');
+  assert.ok(Math.abs(haversine(0, 0, 0, 1, 'm') - km * 1000) < 1e-6);
+  assert.ok(Math.abs(haversine(0, 0, 0, 1, 'nm') - km * 0.539957) < 1e-6);
+});
+
+test('haversine rejects unknown unit', () => {
+  // MCP clients pass untyped args; an unsupported unit must error, not
+  // silently return undefined.
+  assert.throws(() => haversine(0, 0, 0, 1, 'furlong' as unknown as never), /unknown unit/);
+});
+
+test('haversine rejects non-finite coordinates', () => {
+  assert.throws(() => haversine(NaN, 0, 0, 1), /finite number/);
+  assert.throws(() => haversine(0, Infinity, 0, 1), /finite number/);
+});
+
+test('bearing rejects non-finite coordinates', () => {
+  assert.throws(() => bearing(0, 0, NaN, 1), /finite number/);
+});

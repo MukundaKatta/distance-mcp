@@ -23,7 +23,16 @@ export type Unit = 'km' | 'm' | 'mi' | 'nm';
 function deg2rad(d: number): number { return (d * Math.PI) / 180; }
 function rad2deg(r: number): number { return (r * 180) / Math.PI; }
 
+function assertCoords(lat1: number, lon1: number, lat2: number, lon2: number): void {
+  for (const [name, value] of [['lat1', lat1], ['lon1', lon1], ['lat2', lat2], ['lon2', lon2]] as const) {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+      throw new Error(`${name} must be a finite number, got ${value}`);
+    }
+  }
+}
+
 export function haversine(lat1: number, lon1: number, lat2: number, lon2: number, unit: Unit = 'km'): number {
+  assertCoords(lat1, lon1, lat2, lon2);
   const phi1 = deg2rad(lat1);
   const phi2 = deg2rad(lat2);
   const dPhi = deg2rad(lat2 - lat1);
@@ -36,10 +45,12 @@ export function haversine(lat1: number, lon1: number, lat2: number, lon2: number
     case 'm': return km * 1000;
     case 'mi': return km * 0.621371;
     case 'nm': return km * 0.539957;
+    default: throw new Error(`unknown unit: ${unit} (expected km, m, mi, or nm)`);
   }
 }
 
 export function bearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  assertCoords(lat1, lon1, lat2, lon2);
   const phi1 = deg2rad(lat1);
   const phi2 = deg2rad(lat2);
   const dLambda = deg2rad(lon2 - lon1);
